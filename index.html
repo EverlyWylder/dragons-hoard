@@ -109,12 +109,15 @@
   </div>
 </section>
 
-<section class="card star" id="starCard">
-  <h2>A special quest, once only</h2>
-  <p>Choose your dragon's name. Keep <b id="dragonNameD">Ember</b>, or pick your own. Either way it earns the star gem.</p>
-  <div class="row">
-    <button class="btn gold" id="starBtn">Pick a name</button>
-    <button class="btn plum" id="keepBtn">Keep this name</button>
+<section class="card star" id="waterCard">
+  <h2>A special quest <span class="plain">(every day)</span></h2>
+  <div id="waterIdle">
+    <p>Drink a glass of water. Dragons guard wells as well as gold.</p>
+    <button class="btn gold" id="waterBtn">I drank my water</button>
+  </div>
+  <div id="waterDone" hidden>
+    <p class="won">Water drunk. The well is a little fuller.</p>
+    <button class="linkish" id="waterUndo">That was a mistake, take it back</button>
   </div>
 </section>
 

@@ -93,7 +93,6 @@
     $("dragonNameA").textContent = name;
     $("dragonNameB").textContent = name;
     $("dragonNameC").textContent = name;
-    $("dragonNameD").textContent = name;
     var sign = $("signName");
     sign.textContent = name;
     sign.setAttribute("font-size", name.length <= 8 ? 20 : name.length <= 11 ? 16 : name.length <= 15 ? 12 : 9.5);
@@ -164,7 +163,8 @@
     $("longerBox").checked = !!state.longer;
     $("amBtn").setAttribute("aria-pressed", d.am ? "true" : "false");
     $("pmBtn").setAttribute("aria-pressed", d.pm ? "true" : "false");
-    $("starCard").hidden = !!state.star;
+    $("waterIdle").hidden = !!d.water;
+    $("waterDone").hidden = !d.water;
     $("alarmHelp").hidden = false;
     if (!state.alarms) $("alarmHelp").open = true;
     $("alarmsSet").hidden = !!state.alarms;
@@ -231,6 +231,9 @@
           "Ready when you are. One new quest at a time works best.") + "</p>" + asleep + "</section>";
     }
     $("sideQuests").innerHTML = html;
+    var cups = treasureCount("water");
+    if (cups) chest = '<span><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2c5 6 8 9.5 8 13a8 8 0 0 1-16 0c0-3.5 3-7 8-13z" fill="#4db8ff" stroke="#fff" stroke-opacity=".6"/><circle cx="9" cy="14" r="2" fill="#fff" opacity=".8"/></svg>' +
+      cups + (cups === 1 ? " glass of water" : " glasses of water") + "</span>" + chest;
     $("chest").innerHTML = chest;
     $("chest").hidden = !chest;
     sideTick();
@@ -397,8 +400,12 @@
     return true;
   }
   function earnStar() { state.star = true; save(); renderAll(); puff("★", "#ffe27a"); }
-  $("starBtn").onclick = function () { if (rename()) earnStar(); };
-  $("keepBtn").onclick = earnStar;
+  $("waterBtn").onclick = function () {
+    day(todayStr()).water = true;
+    if (!state.star) { earnStar(); return; }   // the very first glass earns the star gem
+    save(); renderAll(); puff("✦", "#7fd4ff");
+  };
+  $("waterUndo").onclick = function () { delete day(todayStr()).water; save(); renderAll(); };
   $("alarmsSet").onclick = function () { state.alarms = true; save(); $("alarmHelp").open = false; renderQuest(); };
   $("whisper").onclick = function () { state.wOff = (state.wOff || 0) + 1; save(); renderScene(); };
   $("sign").onkeydown = function (e) { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); $("renameBtn").onclick(); } };

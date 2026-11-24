@@ -1,5 +1,5 @@
 // keeps the app working with no internet: serve the saved copy, refresh it quietly when online
-var CACHE = "dragons-hoard-5";
+var CACHE = "dragons-hoard-6";
 var FILES = ["./", "index.html", "style.css", "app.js", "words.js", "manifest.json", "almendra-bold.ttf", "dragon.webp", "icon-192.png", "icon-512.png"];
 
 self.addEventListener("install", function (e) {
