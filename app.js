@@ -163,6 +163,7 @@
     $("longerBox").checked = !!state.longer;
     $("amBtn").setAttribute("aria-pressed", d.am ? "true" : "false");
     $("pmBtn").setAttribute("aria-pressed", d.pm ? "true" : "false");
+    $("starBack").hidden = !state.noStar;
     $("waterIdle").hidden = !!d.water;
     $("waterDone").hidden = !d.water;
     $("alarmHelp").hidden = false;
@@ -432,10 +433,22 @@
   function earnStar() { state.star = true; save(); renderAll(); puff("★", "#ffe27a"); }
   $("waterBtn").onclick = function () {
     day(todayStr()).water = true;
-    if (!state.star) { earnStar(); return; }   // the very first glass earns the star gem
+    if (!state.star && !state.noStar) { state.starDay = todayStr(); earnStar(); return; }   // the very first glass earns the star gem
     save(); renderAll(); puff("✦", "#7fd4ff");
   };
-  $("waterUndo").onclick = function () { delete day(todayStr()).water; save(); renderAll(); };
+  $("waterUndo").onclick = function () {
+    delete day(todayStr()).water;
+    if (state.starDay === todayStr()) { state.star = false; delete state.starDay; }   // taking back the glass that earned it
+    save(); renderAll();
+  };
+  function starDown() {
+    ask("Take the star down? You can hang it back up from The three rules.", { yes: "Take it down", no: "Leave it" }, function () {
+      state.star = false; state.noStar = true; delete state.starDay; save(); renderAll();
+    });
+  }
+  $("starGem").onclick = starDown;
+  $("starGem").onkeydown = function (e) { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); starDown(); } };
+  $("starBack").onclick = function () { state.noStar = false; earnStar(); };
   $("alarmsSet").onclick = function () { state.alarms = true; save(); $("alarmHelp").open = false; renderQuest(); };
   $("whisper").onclick = function () { state.wOff = (state.wOff || 0) + 1; save(); renderScene(); };
   $("sign").onkeydown = function (e) { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); rename(); } };

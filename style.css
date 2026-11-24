@@ -215,6 +215,7 @@ details.scroll p { margin: 10px 0; }
 .twist { margin: -4px 0 12px; font-size: .95rem; color: #9be7ff; }
 .tiny-links { flex-wrap: wrap; }
 
+.star-gem { cursor: pointer; }
 .version { text-align: center; font-size: .75rem; color: var(--soft); opacity: .7; margin: 18px 0 0; }
 .ask { position: fixed; inset: 0; z-index: 10; display: grid; place-items: center; padding: 18px; background: rgba(15, 6, 30, .78); }
 .ask-box {
