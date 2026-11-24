@@ -93,6 +93,7 @@
     $("dragonNameA").textContent = name;
     $("dragonNameB").textContent = name;
     $("dragonNameC").textContent = name;
+    $("dragonNameD").textContent = name;
     var sign = $("signName");
     sign.textContent = name;
     sign.setAttribute("font-size", name.length <= 8 ? 20 : name.length <= 11 ? 16 : name.length <= 15 ? 12 : 9.5);
@@ -389,18 +390,20 @@
   $("amBtn").onclick = function () { treat("am"); };
   $("pmBtn").onclick = function () { treat("pm"); };
 
-  $("starBtn").onclick = function () {
-    state.star = true; save(); renderAll();
-    puff("★", "#ffe27a");
-  };
+  function rename() {
+    var n = prompt("What is your dragon called?", state.name);
+    if (!n || !n.trim()) return false;
+    state.name = n.trim().slice(0, 20); save(); renderAll();
+    return true;
+  }
+  function earnStar() { state.star = true; save(); renderAll(); puff("★", "#ffe27a"); }
+  $("starBtn").onclick = function () { if (rename()) earnStar(); };
+  $("keepBtn").onclick = earnStar;
   $("alarmsSet").onclick = function () { state.alarms = true; save(); $("alarmHelp").open = false; renderQuest(); };
   $("whisper").onclick = function () { state.wOff = (state.wOff || 0) + 1; save(); renderScene(); };
   $("sign").onkeydown = function (e) { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); $("renameBtn").onclick(); } };
   $("sign").onclick = function () { $("renameBtn").onclick(); };
-  $("renameBtn").onclick = function () {
-    var n = prompt("What is your dragon called?", state.name);
-    if (n && n.trim()) { state.name = n.trim().slice(0, 20); save(); renderAll(); }
-  };
+  $("renameBtn").onclick = rename;
 
   $("grid").onclick = function (e) {
     var b = e.target.closest(".spot");
