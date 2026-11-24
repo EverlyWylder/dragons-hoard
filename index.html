@@ -8,7 +8,7 @@
 <link rel="manifest" href="manifest.json">
 <link rel="icon" href="icon-192.png">
 <link rel="apple-touch-icon" href="icon-192.png">
-<link rel="stylesheet" href="style.css?v=7">
+<link rel="stylesheet" href="style.css?v=8">
 </head>
 <body>
 <main>
@@ -153,8 +153,21 @@
   <button class="linkish" id="renameBtn">Give your dragon a different name</button>
 </details>
 
+<p class="version">The Dragon's Hoard · version 8</p>
+
 </main>
-<script src="words.js?v=7"></script>
-<script src="app.js?v=7"></script>
+
+<div id="ask" class="ask" hidden role="dialog" aria-modal="true" aria-labelledby="askText">
+  <div class="ask-box">
+    <p id="askText"></p>
+    <input id="askInput" type="text" autocomplete="off" autocapitalize="words" enterkeyhint="done">
+    <div class="row">
+      <button class="btn plum" id="askNo">Cancel</button>
+      <button class="btn gold" id="askYes">OK</button>
+    </div>
+  </div>
+</div>
+<script src="words.js?v=8"></script>
+<script src="app.js?v=8"></script>
 </body>
 </html>

@@ -1,8 +1,8 @@
 // Keeps the app working with no internet.
 // Online: always fetch the newest files. Offline or very slow: use the saved copy.
 // When the app changes, raise the number here AND the ?v= numbers in index.html together.
-var CACHE = "dragons-hoard-7";
-var FILES = ["./", "index.html", "style.css?v=7", "words.js?v=7", "app.js?v=7", "manifest.json",
+var CACHE = "dragons-hoard-8";
+var FILES = ["./", "index.html", "style.css?v=8", "words.js?v=8", "app.js?v=8", "manifest.json",
   "almendra-bold.ttf", "dragon.webp", "icon-192.png", "icon-512.png"];
 
 self.addEventListener("install", function (e) {

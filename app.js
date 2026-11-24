@@ -267,19 +267,21 @@
     var b = e.target.closest("[data-act]");
     if (!b) return;
     var q = sideOf(b.dataset.id), s = side(q.id), act = b.dataset.act;
+    function finish() { save(); renderAll(); }
     if (act === "wake") {
       var early = dayIndex(todayStr()) < 28;
       var msg = early ? "The plan is one quest for the first month, so it has time to stick. Wake " + q.name + " now anyway?" :
         "Wake " + q.name + "? One new quest at a time works best.";
-      if (!confirm(msg)) return;
-      s.awake = true;
+      ask(msg, { yes: "Wake it", no: "Not yet" }, function () { s.awake = true; finish(); });
+      return;
     } else if (act === "sleep") {
-      if (!confirm("Put " + q.name + " back to sleep? Its treasure stays in the hoard.")) return;
-      s.awake = false;
+      ask("Put " + q.name + " back to sleep? Its treasure stays in the hoard.", { yes: "Back to sleep", no: "Keep it awake" },
+        function () { s.awake = false; finish(); });
+      return;
     } else if (act === "words") {
-      var t = prompt("Write your own small step for this quest. Leave it empty to go back to a new idea every day.", s.text || "");
-      if (t === null) return;
-      s.text = t.trim().slice(0, 200);
+      ask("Write your own small step for this quest. Leave it empty to go back to a new idea every day.",
+        { input: true, value: s.text || "", yes: "Save" }, function (t) { s.text = t.trim().slice(0, 200); finish(); });
+      return;
     } else if (act === "other") {
       s.off = (s.off || 0) + 1;
       s.text = "";
@@ -288,7 +290,7 @@
     } else if (act === "undo") {
       delete day(todayStr())[q.id];
     } else if (act === "start") {
-      if (run || sideRun) { alert("One timer at a time. Finish or stop the other one first."); return; }
+      if (run || sideRun) { ask("One timer at a time. Finish or stop the other one first.", { only: true }); return; }
       wakeUp();
       sideRun = { id: q.id, endsAt: Date.now() + q.mins * 60000 };
       sideTicker = setInterval(sideTick, 250);
@@ -365,7 +367,7 @@
   }
 
   $("beginBtn").onclick = function () {
-    if (sideRun) { alert("One timer at a time. Finish or stop the other one first."); return; }
+    if (sideRun) { ask("One timer at a time. Finish or stop the other one first.", { only: true }); return; }
     wakeUp();
     startPhase("walk");
     ticker = setInterval(tick, 250);
@@ -393,11 +395,39 @@
   $("amBtn").onclick = function () { treat("am"); };
   $("pmBtn").onclick = function () { treat("pm"); };
 
+  // the app's own pop-up, used for every question (phones can block the browser's built-in ones)
+  var askThen = null;
+  function ask(text, opts, then) {
+    opts = opts || {};
+    var inp = $("askInput");
+    $("askText").textContent = text;
+    inp.hidden = !opts.input;
+    inp.value = opts.value || "";
+    inp.maxLength = opts.max || 200;
+    $("askNo").hidden = !!opts.only;
+    $("askNo").textContent = opts.no || "Cancel";
+    $("askYes").textContent = opts.yes || "OK";
+    askThen = then || null;
+    $("ask").hidden = false;
+    if (opts.input) { inp.focus(); inp.select(); } else $("askYes").focus();
+  }
+  function askClose(yes) {
+    var then = askThen, inp = $("askInput");
+    askThen = null;
+    $("ask").hidden = true;
+    if (yes && then) then(inp.hidden ? true : inp.value);
+  }
+  $("askYes").onclick = function () { askClose(true); };
+  $("askNo").onclick = function () { askClose(false); };
+  $("ask").onclick = function (e) { if (e.target === this) askClose(false); };
+  $("askInput").onkeydown = function (e) { if (e.key === "Enter") { e.preventDefault(); askClose(true); } };
+  document.addEventListener("keydown", function (e) { if (e.key === "Escape" && !$("ask").hidden) askClose(false); });
+
   function rename() {
-    var n = prompt("What is your dragon called?", state.name);
-    if (!n || !n.trim()) return false;
-    state.name = n.trim().slice(0, 20); save(); renderAll();
-    return true;
+    ask("What is your dragon called?", { input: true, value: state.name, max: 20, yes: "Name him" }, function (n) {
+      if (!n.trim()) return;
+      state.name = n.trim().slice(0, 20); save(); renderAll();
+    });
   }
   function earnStar() { state.star = true; save(); renderAll(); puff("★", "#ffe27a"); }
   $("waterBtn").onclick = function () {
@@ -408,14 +438,15 @@
   $("waterUndo").onclick = function () { delete day(todayStr()).water; save(); renderAll(); };
   $("alarmsSet").onclick = function () { state.alarms = true; save(); $("alarmHelp").open = false; renderQuest(); };
   $("whisper").onclick = function () { state.wOff = (state.wOff || 0) + 1; save(); renderScene(); };
-  $("sign").onkeydown = function (e) { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); $("renameBtn").onclick(); } };
-  $("sign").onclick = function () { $("renameBtn").onclick(); };
-  $("renameBtn").onclick = rename;
+  $("sign").onkeydown = function (e) { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); rename(); } };
+  $("sign").onclick = function () { rename(); };
+  $("renameBtn").onclick = function () { rename(); };
 
   $("grid").onclick = function (e) {
     var b = e.target.closest(".spot");
     if (!b || !b.classList.contains("past") || b.classList.contains("has")) return;
-    if (confirm("Did you do your quest on " + niceDate(b.dataset.date) + "? Tap OK to add its gem.")) earn("late", b.dataset.date);
+    var ds = b.dataset.date;
+    ask("Did you do your quest on " + niceDate(ds) + "?", { yes: "Yes, add its gem", no: "No" }, function () { earn("late", ds); });
   };
 
   // a new day may have started while the app sat open
