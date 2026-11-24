@@ -432,6 +432,11 @@
   renderAll();
 
   if ("serviceWorker" in navigator && /^https?:$/.test(location.protocol)) {
+    // when a newer version of the app takes over, reload once so the page and its files always match
+    var hadOne = !!navigator.serviceWorker.controller, reloaded = false;
+    navigator.serviceWorker.addEventListener("controllerchange", function () {
+      if (hadOne && !reloaded && !run && !sideRun) { reloaded = true; location.reload(); }
+    });
     navigator.serviceWorker.register("sw.js").catch(function () { /* offline use just won't be available */ });
   }
 })();

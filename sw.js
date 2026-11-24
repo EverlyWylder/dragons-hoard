@@ -1,9 +1,14 @@
-// keeps the app working with no internet: serve the saved copy, refresh it quietly when online
-var CACHE = "dragons-hoard-6";
-var FILES = ["./", "index.html", "style.css", "app.js", "words.js", "manifest.json", "almendra-bold.ttf", "dragon.webp", "icon-192.png", "icon-512.png"];
+// Keeps the app working with no internet.
+// Online: always fetch the newest files. Offline or very slow: use the saved copy.
+// When the app changes, raise the number here AND the ?v= numbers in index.html together.
+var CACHE = "dragons-hoard-7";
+var FILES = ["./", "index.html", "style.css?v=7", "words.js?v=7", "app.js?v=7", "manifest.json",
+  "almendra-bold.ttf", "dragon.webp", "icon-192.png", "icon-512.png"];
 
 self.addEventListener("install", function (e) {
-  e.waitUntil(caches.open(CACHE).then(function (c) { return c.addAll(FILES); }).then(function () { return self.skipWaiting(); }));
+  e.waitUntil(caches.open(CACHE).then(function (c) {
+    return c.addAll(FILES.map(function (f) { return new Request(f, { cache: "reload" }); }));
+  }).then(function () { return self.skipWaiting(); }));
 });
 
 self.addEventListener("activate", function (e) {
@@ -13,14 +18,22 @@ self.addEventListener("activate", function (e) {
 });
 
 self.addEventListener("fetch", function (e) {
-  if (e.request.method !== "GET") return;
+  var req = e.request;
+  if (req.method !== "GET" || new URL(req.url).origin !== self.location.origin) return;
   e.respondWith(caches.open(CACHE).then(function (c) {
-    return c.match(e.request, { ignoreSearch: true }).then(function (hit) {
-      var fresh = fetch(e.request).then(function (res) {
-        if (res && res.ok) c.put(e.request, res.clone());
-        return res;
-      }).catch(function () { return hit; });
-      return hit || fresh;
+    function saved() {
+      return c.match(req).then(function (hit) {
+        // only the page itself may ignore the "?..." part; scripts and styles must match their version exactly
+        return hit || (req.mode === "navigate" ? c.match(req, { ignoreSearch: true }) : undefined);
+      });
+    }
+    var net = fetch(req).then(function (res) {
+      if (res && res.ok) c.put(req, res.clone());
+      return res;
+    });
+    var slow = new Promise(function (r) { setTimeout(r, 4000); }).then(saved);
+    return Promise.race([net.catch(function () { return null; }), slow]).then(function (res) {
+      return res || saved().then(function (hit) { return hit || net; });
     });
   }));
 });
